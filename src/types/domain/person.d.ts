@@ -3,7 +3,7 @@ interface Person {
   name: string;
   rg: string;
   cpf: string;
-  birthDate: Date;
-  admissionDate: Date;
+  birthDate: Date | string;
+  admissionDate: Date | string;
   occupation?: string;
 }
