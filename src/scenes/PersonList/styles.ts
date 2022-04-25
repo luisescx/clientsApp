@@ -1,4 +1,4 @@
-import { Platform } from 'react-native';
+import { Platform, TouchableOpacity } from 'react-native';
 import {
   getBottomSpace,
   getStatusBarHeight,
@@ -25,4 +25,18 @@ const margin = Platform.select({
 export const Content = styled.View`
   flex: 1;
   margin: ${margin?.marginTop}px 0 ${margin?.marginTop}px;
+`;
+
+export const SyncButton = styled(TouchableOpacity).attrs({
+  activeOpacity: 0.7,
+})`
+  position: absolute;
+  bottom: 20px;
+  right: 26px;
+  width: 40px;
+  height: 40px;
+  border-radius: 30px;
+  justify-content: center;
+  align-items: center;
+  background-color: ${({ theme }) => theme.colors.primary200};
 `;

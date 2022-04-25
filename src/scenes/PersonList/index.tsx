@@ -4,7 +4,8 @@ import { useNavigation } from '@react-navigation/native';
 import { useTheme } from 'styled-components/native';
 import usePersons from '~/hooks/usePersons';
 import { PersonCard } from '~/components';
-import { Container, Content } from './styles';
+import Icon from '~/components/Icon';
+import { Container, Content, SyncButton } from './styles';
 
 const PersonList = () => {
   const { colors } = useTheme();
@@ -30,10 +31,18 @@ const PersonList = () => {
     (person: Person) => {
       navigate('PersonForm', {
         person,
+        isCreatePerson: false,
       });
     },
     [navigate],
   );
+
+  const handleNewPerson = useCallback(() => {
+    navigate('PersonForm', {
+      person: {} as Person,
+      isCreatePerson: true,
+    });
+  }, [navigate]);
 
   const renderItem = useCallback(
     ({ item }: ListRenderItemInfo<Person>) => {
@@ -62,6 +71,10 @@ const PersonList = () => {
             paddingHorizontal: 16,
           }}
         />
+
+        <SyncButton onPress={handleNewPerson}>
+          <Icon color={colors.white} name="plus" />
+        </SyncButton>
       </Content>
     </Container>
   );
