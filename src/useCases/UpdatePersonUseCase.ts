@@ -11,7 +11,7 @@ const updatePersonUseCase = async (person: Person): Promise<Person> => {
       throw new Error(e.response?.data.message);
     }
 
-    throw new Error('Não foi possível excluir colaborador');
+    throw new Error('Não foi possível atualizar colaborador');
   }
 };
 
