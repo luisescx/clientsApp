@@ -3,7 +3,7 @@ import { Alert, FlatList, ListRenderItemInfo, StatusBar } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useTheme } from 'styled-components/native';
 import usePersons from '~/hooks/usePersons';
-import { PersonCard } from '~/components';
+import { Loading, PersonCard } from '~/components';
 import Icon from '~/components/Icon';
 import InputSearch from './components/InputSearch';
 import { Container, Content, Header, AddButton, SyncButton } from './styles';
@@ -15,7 +15,7 @@ const PersonList = () => {
 
   const { colors } = useTheme();
 
-  const { persons, deletePerson } = usePersons();
+  const { persons, deletePerson, isLoading } = usePersons();
 
   const { navigate } = useNavigation();
 
@@ -98,35 +98,39 @@ const PersonList = () => {
     <Container>
       <StatusBar barStyle="dark-content" backgroundColor={colors.background} />
 
-      <Header>
-        <InputSearch
-          isValueEmpty={clearSearch}
-          handleInputSearch={filterData}
-          placeholder="Buscar por nome"
-        />
-      </Header>
+      {isLoading ? (
+        <Loading />
+      ) : (
+        <Content>
+          <Header>
+            <InputSearch
+              isValueEmpty={clearSearch}
+              handleInputSearch={filterData}
+              placeholder="Buscar por nome"
+            />
+          </Header>
 
-      <Content>
-        <FlatList
-          data={filteredPersons}
-          keyExtractor={item => String(item.idPerson)}
-          showsVerticalScrollIndicator={false}
-          renderItem={renderItem}
-          contentContainerStyle={{
-            paddingHorizontal: 16,
-          }}
-        />
+          <FlatList
+            data={filteredPersons}
+            keyExtractor={item => String(item.idPerson)}
+            showsVerticalScrollIndicator={false}
+            renderItem={renderItem}
+            contentContainerStyle={{
+              paddingHorizontal: 16,
+            }}
+          />
 
-        {isDataFiltered && (
-          <SyncButton onPress={reloadPersons}>
-            <Icon color={colors.white} name="reload" />
-          </SyncButton>
-        )}
+          {isDataFiltered && (
+            <SyncButton onPress={reloadPersons}>
+              <Icon color={colors.white} name="reload" />
+            </SyncButton>
+          )}
 
-        <AddButton onPress={handleNewPerson}>
-          <Icon color={colors.white} name="plus" />
-        </AddButton>
-      </Content>
+          <AddButton onPress={handleNewPerson}>
+            <Icon color={colors.white} name="plus" />
+          </AddButton>
+        </Content>
+      )}
     </Container>
   );
 };

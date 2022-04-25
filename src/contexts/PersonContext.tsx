@@ -14,6 +14,7 @@ import updatePersonUseCase from '~/useCases/UpdatePersonUseCase';
 
 interface PersonProps {
   persons: Person[];
+  isLoading: boolean;
   deletePerson: (id: number) => Promise<void>;
   updatePerson: (person: Person) => Promise<void>;
   createPerson: (person: Person) => Promise<void>;
@@ -27,18 +28,25 @@ export const PersonContext = createContext({} as PersonProps);
 
 const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
   const [persons, setPersons] = useState<Person[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const load = useCallback(async () => {
     try {
+      setIsLoading(true);
+
       setPersons(await getPersonsUseCase());
     } catch (e) {
       Alert.alert(`${e}`);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
   const deletePerson = useCallback(
     async (id: number) => {
       try {
+        setIsLoading(true);
+
         const isDeleted = await deletePersonUseCase(id);
 
         if (isDeleted) {
@@ -48,7 +56,10 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
 
           Alert.alert('Colaborador excluído com sucesso');
         }
+
+        setIsLoading(false);
       } catch (e) {
+        setIsLoading(false);
         Alert.alert(`${e}`);
       }
     },
@@ -58,6 +69,8 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
   const updatePerson = useCallback(
     async (person: Person) => {
       try {
+        setIsLoading(true);
+
         const updatedPerson = await updatePersonUseCase(person);
 
         if (updatedPerson) {
@@ -71,14 +84,19 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
             Object.assign(newList[index], { ...updatedPerson });
 
             setPersons(newList);
+            setIsLoading(false);
+
             Alert.alert('Coloborador atualizado com sucesso');
 
             return;
           }
         }
 
+        setIsLoading(false);
         Alert.alert('Erro ao atualizar colaborador');
       } catch (e) {
+        setIsLoading(false);
+
         Alert.alert(`${e}`);
       }
     },
@@ -87,17 +105,21 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
 
   const createPerson = useCallback(async (person: Person) => {
     try {
+      setIsLoading(true);
       const createdPerson = await createPersonUseCase(person);
 
       if (createdPerson) {
         setPersons(prevState => [...prevState, createdPerson]);
+        setIsLoading(false);
         Alert.alert('Coloborador criado com sucesso');
 
         return;
       }
 
+      setIsLoading(false);
       Alert.alert('Erro ao criar colaborador');
     } catch (e) {
+      setIsLoading(false);
       Alert.alert(`${e}`);
     }
   }, []);
@@ -105,11 +127,12 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
   const value = useMemo(
     () => ({
       persons,
+      isLoading,
       deletePerson,
       updatePerson,
       createPerson,
     }),
-    [persons, deletePerson, updatePerson, createPerson],
+    [persons, isLoading, deletePerson, updatePerson, createPerson],
   );
 
   useEffect(() => {
