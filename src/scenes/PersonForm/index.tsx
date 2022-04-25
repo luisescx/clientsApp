@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { Alert, StatusBar } from 'react-native';
 import { RouteProp, useNavigation, useRoute } from '@react-navigation/native';
 import { useTheme } from 'styled-components/native';
@@ -16,21 +16,39 @@ import {
 
 const PersonForm = () => {
   const { params } = useRoute<RouteProp<AppStackParamsList, 'PersonForm'>>();
-  const { person } = params;
+  const { person, isCreatePerson } = params;
 
   const { colors } = useTheme();
 
-  const { goBack } = useNavigation();
+  const { goBack, navigate } = useNavigation();
 
-  const { updatePerson } = usePersons();
+  const { updatePerson, createPerson } = usePersons();
 
   const [personForm, setPersonForm] = useState<Person>(
     {
       ...person,
-      admissionDate: formatDateToString(person?.admissionDate as Date),
-      birthDate: formatDateToString(person?.birthDate as Date),
+      admissionDate: person?.admissionDate
+        ? formatDateToString(person?.admissionDate as Date)
+        : '',
+      birthDate: person?.admissionDate
+        ? formatDateToString(person?.birthDate as Date)
+        : '',
     } || ({} as Person),
   );
+
+  const isOnsubmitDisabled = useMemo(() => {
+    if (!isCreatePerson) {
+      const personKeys = Object.keys(person);
+
+      const isFormUpdated = personKeys.some(
+        key => personForm[key as keyof Person] !== person[key as keyof Person],
+      );
+
+      return !isFormUpdated;
+    }
+
+    return false;
+  }, [isCreatePerson, person, personForm]);
 
   const handleChangeText = useCallback(
     (text: string, type: AttributesTypes) => {
@@ -54,17 +72,28 @@ const PersonForm = () => {
       Alert.alert('RG é obrigatório');
       return;
     }
-    if (!personForm.admissionDate) {
+    if (!personForm.admissionDate || personForm.admissionDate === '') {
       Alert.alert('Data de admissão é obrigatório');
       return;
     }
-    if (!personForm.birthDate) {
+    if (!personForm.birthDate || personForm.birthDate === '') {
       Alert.alert('Data de nascimento é obrigatório');
       return;
     }
 
-    const personToSave = {} as Person;
+    if (isCreatePerson) {
+      personForm.admissionDate = parseStringToDate(
+        personForm.admissionDate as string,
+      );
+      personForm.birthDate = parseStringToDate(personForm.birthDate as string);
 
+      await createPerson(personForm);
+      navigate('PersonList');
+
+      return;
+    }
+
+    const personToSave = {} as Person;
     const personKeys = Object.keys(person);
 
     personKeys.forEach(key => {
@@ -72,17 +101,25 @@ const PersonForm = () => {
         personToSave[key as keyof Person] = personForm[key as keyof Person];
 
         if (key === 'admissionDate' || key === 'birthDate') {
-          personToSave[key as keyof Person] = new Date(
-            parseStringToDate(personToSave[key as keyof Person] as string),
+          personToSave[key as keyof Person] = parseStringToDate(
+            personToSave[key as keyof Person] as string,
           );
         }
       }
     });
 
     personToSave.idPerson = person.idPerson;
-
     await updatePerson(personToSave);
-  }, [person, personForm, updatePerson]);
+
+    navigate('PersonList');
+  }, [
+    createPerson,
+    isCreatePerson,
+    navigate,
+    person,
+    personForm,
+    updatePerson,
+  ]);
 
   return (
     <>
@@ -108,6 +145,7 @@ const PersonForm = () => {
           label="RG"
           placeholder="Digite o RG"
           value={personForm.rg}
+          keyboardType="number-pad"
           onChangeText={text => handleChangeText(text, 'rg')}
         />
 
@@ -157,6 +195,7 @@ const PersonForm = () => {
           color={colors.primary200}
           style={{ flex: 1 }}
           onPress={onSubmit}
+          disabled={isOnsubmitDisabled}
         >
           <ButtonLabel>Confirmar</ButtonLabel>
         </Button>

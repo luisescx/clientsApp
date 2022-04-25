@@ -23,7 +23,7 @@ const AppNavigation = () => {
           name="PersonForm"
           component={PersonForm}
           options={{
-            title: 'Novo Colaborador',
+            title: 'Cadastro Colaborador',
           }}
         />
       </Group>
