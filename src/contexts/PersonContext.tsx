@@ -9,10 +9,12 @@ import React, {
 import { Alert } from 'react-native';
 import deletePersonUseCase from '~/useCases/DeletePersonUseCase';
 import getPersonsUseCase from '~/useCases/GetPersonsUseCase';
+import updatePersonUseCase from '~/useCases/UpdatePersonUseCase';
 
 interface PersonProps {
   persons: Person[];
   deletePerson: (id: number) => Promise<void>;
+  updatePerson: (person: Person) => Promise<void>;
 }
 
 interface PersonProviderProps {
@@ -51,12 +53,38 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
     [persons],
   );
 
+  const updatePerson = useCallback(
+    async (person: Person) => {
+      try {
+        const updatedPerson = await updatePersonUseCase(person);
+
+        if (updatedPerson) {
+          const index = persons.findIndex(
+            ({ idPerson }) => idPerson === updatedPerson.idPerson,
+          );
+
+          if (index !== -1) {
+            const newList = [...persons];
+
+            Object.assign(newList[index], { ...updatedPerson });
+
+            setPersons(newList);
+          }
+        }
+      } catch (e) {
+        Alert.alert(`${e}`);
+      }
+    },
+    [persons],
+  );
+
   const value = useMemo(
     () => ({
       persons,
       deletePerson,
+      updatePerson,
     }),
-    [persons, deletePerson],
+    [persons, deletePerson, updatePerson],
   );
 
   useEffect(() => {
