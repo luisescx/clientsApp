@@ -7,6 +7,7 @@ import React, {
   useEffect,
 } from 'react';
 import { Alert } from 'react-native';
+import createPersonUseCase from '~/useCases/CreatePersonUseCase';
 import deletePersonUseCase from '~/useCases/DeletePersonUseCase';
 import getPersonsUseCase from '~/useCases/GetPersonsUseCase';
 import updatePersonUseCase from '~/useCases/UpdatePersonUseCase';
@@ -15,6 +16,7 @@ interface PersonProps {
   persons: Person[];
   deletePerson: (id: number) => Promise<void>;
   updatePerson: (person: Person) => Promise<void>;
+  createPerson: (person: Person) => Promise<void>;
 }
 
 interface PersonProviderProps {
@@ -69,8 +71,13 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
             Object.assign(newList[index], { ...updatedPerson });
 
             setPersons(newList);
+            Alert.alert('Coloborador atualizado com sucesso');
+
+            return;
           }
         }
+
+        Alert.alert('Erro ao atualizar colaborador');
       } catch (e) {
         Alert.alert(`${e}`);
       }
@@ -78,13 +85,31 @@ const PersonProvider: React.FC<PersonProviderProps> = ({ children }) => {
     [persons],
   );
 
+  const createPerson = useCallback(async (person: Person) => {
+    try {
+      const createdPerson = await createPersonUseCase(person);
+
+      if (createdPerson) {
+        setPersons(prevState => [...prevState, createdPerson]);
+        Alert.alert('Coloborador criado com sucesso');
+
+        return;
+      }
+
+      Alert.alert('Erro ao criar colaborador');
+    } catch (e) {
+      Alert.alert(`${e}`);
+    }
+  }, []);
+
   const value = useMemo(
     () => ({
       persons,
       deletePerson,
       updatePerson,
+      createPerson,
     }),
-    [persons, deletePerson, updatePerson],
+    [persons, deletePerson, updatePerson, createPerson],
   );
 
   useEffect(() => {
