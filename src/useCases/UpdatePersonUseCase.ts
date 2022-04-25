@@ -1,9 +1,9 @@
 import axios from 'axios';
 import { api } from '~/services/api';
 
-const deletePersonUseCase = async (id: number): Promise<boolean> => {
+const updatePersonUseCase = async (person: Person): Promise<Person> => {
   try {
-    const { data } = await api.get<boolean>(`/persons/delete/${id}`);
+    const { data } = await api.post<Person>(`/persons/update`, { ...person });
 
     return data;
   } catch (e) {
@@ -15,4 +15,4 @@ const deletePersonUseCase = async (id: number): Promise<boolean> => {
   }
 };
 
-export default deletePersonUseCase;
+export default updatePersonUseCase;
