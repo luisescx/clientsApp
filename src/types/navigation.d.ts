@@ -2,6 +2,7 @@ export type AppStackParamsList = {
   PersonList: undefined;
   PersonForm: {
     person: Person;
+    isCreatePerson: boolean;
   };
 };
 
