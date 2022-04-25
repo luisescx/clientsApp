@@ -82,12 +82,13 @@ const PersonForm = () => {
     }
 
     if (isCreatePerson) {
-      personForm.admissionDate = parseStringToDate(
-        personForm.admissionDate as string,
+      const newPerson = { ...personForm };
+      newPerson.admissionDate = parseStringToDate(
+        newPerson.admissionDate as string,
       );
-      personForm.birthDate = parseStringToDate(personForm.birthDate as string);
+      newPerson.birthDate = parseStringToDate(newPerson.birthDate as string);
 
-      await createPerson(personForm);
+      await createPerson(newPerson);
       navigate('PersonList');
 
       return;
@@ -131,6 +132,7 @@ const PersonForm = () => {
           placeholder="Digite o nome"
           value={personForm.name}
           onChangeText={text => handleChangeText(text, 'name')}
+          autoCapitalize="words"
         />
 
         <InputForm
